@@ -589,39 +589,14 @@ Ready to load CSV data...
         }
 
         function startPollingForTabData() {
-          const pollInterval = setInterval(() => {
-            try {
-              const storedData = localStorage.getItem('figma-csv-data');
-              if (storedData) {
-                const message = JSON.parse(storedData);
-                console.log('Found CSV data in localStorage:', message);
+          // Since localStorage is not available in Figma plugins,
+          // show instructions to user for manual copy-paste
+          updateStatus('info', '📋 In the opened tab: when CSV loads successfully, copy the loaded data and paste it in the Manual CSV Input section below.');
 
-                // Clear the stored data
-                localStorage.removeItem('figma-csv-data');
-                clearInterval(pollInterval);
-
-                // Process the data
-                if (message.type === 'csv-success') {
-                  isLoadingFromSheets = false;
-                  popupFallbackUsed = false;
-                  parent.postMessage({
-                    pluginMessage: {
-                      type: 'load-csv-direct',
-                      csvContent: message.data
-                    }
-                  }, '*');
-                  updateStatus('success', '✅ CSV data loaded successfully from tab!');
-                }
-              }
-            } catch (e) {
-              console.log('Error polling localStorage:', e);
-            }
-          }, 1000);
-
-          // Stop polling after 60 seconds
-          setTimeout(() => {
-            clearInterval(pollInterval);
-          }, 60000);
+          // Auto-expand the manual input section for convenience
+          if (manualInputContent.classList.contains('collapsed')) {
+            toggleManualInput();
+          }
         }
       } catch (error) {
         isLoadingFromSheets = false;
