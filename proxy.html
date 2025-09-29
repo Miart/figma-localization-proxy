@@ -180,6 +180,16 @@
                 if (isPopup && window.opener) {
                     console.log('Sending to opener window');
                     window.opener.postMessage(message, '*');
+                } else if (!isPopup && !isInFigma) {
+                    // Tab mode - use localStorage as fallback
+                    console.log('Tab mode detected, using localStorage');
+                    localStorage.setItem('figma-csv-data', JSON.stringify(message));
+                    // Also try to notify parent domain through various methods
+                    try {
+                        window.postMessage(message, 'https://www.figma.com');
+                    } catch (e) {
+                        console.log('Failed to post to figma.com:', e);
+                    }
                 }
 
                 showStatus(`✅ CSV loaded successfully! ${csvContent.length} characters`, 'success');

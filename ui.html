@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Figma Localization Plugin</title>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      margin: 0;
+      padding: 16px;
+      background: #fff;
+      color: #333;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e5e5;
+    }
+
+    .header-icon {
+      margin-right: 8px;
+      font-size: 16px;
+    }
+
+    .header-title {
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .section {
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      font-weight: 500;
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .input-group {
+      margin-bottom: 12px;
+    }
+
+    .input-label {
+      display: block;
+      font-size: 11px;
+      color: #666;
+      margin-bottom: 4px;
+    }
+
+    .input-field {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #e5e5e5;
+      border-radius: 4px;
+      font-size: 12px;
+      outline: none;
+      box-sizing: border-box;
+    }
+
+    .input-field:focus {
+      border-color: #0d99ff;
+      box-shadow: 0 0 0 2px rgba(13, 153, 255, 0.1);
+    }
+
+    .button {
+      width: 100%;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      margin-bottom: 8px;
+      transition: background-color 0.15s ease;
+    }
+
+    .button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .button-primary {
+      background: #0d99ff;
+      color: white;
+    }
+
+    .button-primary:hover:not(:disabled) {
+      background: #0b7ce6;
+    }
+
+    .button-secondary {
+      background: #f0f0f0;
+      color: #333;
+      border: 1px solid #e5e5e5;
+    }
+
+    .button-secondary:hover:not(:disabled) {
+      background: #e5e5e5;
+    }
+
+    .button-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .autosize-section {
+      border: 1px solid #e5e5e5;
+      border-radius: 4px;
+      padding: 12px;
+      background: #fafafa;
+    }
+
+    .toggle-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .toggle-label {
+      font-size: 12px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+    }
+
+    .toggle-icon {
+      margin-right: 6px;
+    }
+
+    .toggle {
+      position: relative;
+      width: 40px;
+      height: 20px;
+      background: #e5e5e5;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background-color 0.15s ease;
+    }
+
+    .toggle.active {
+      background: #0d99ff;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 16px;
+      height: 16px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.15s ease;
+    }
+
+    .toggle.active .toggle-slider {
+      transform: translateX(20px);
+    }
+
+    .number-input {
+      width: 60px;
+      padding: 4px 8px;
+      border: 1px solid #e5e5e5;
+      border-radius: 4px;
+      font-size: 11px;
+      text-align: center;
+    }
+
+    .status-section {
+      border: 1px solid #e5e5e5;
+      border-radius: 4px;
+      padding: 12px;
+      min-height: 100px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .status-content {
+      font-family: 'SF Mono', Monaco, monospace;
+      font-size: 11px;
+      line-height: 1.4;
+      white-space: pre-wrap;
+    }
+
+    .status-success {
+      color: #00a876;
+    }
+
+    .status-error {
+      color: #f24822;
+    }
+
+    .status-warning {
+      color: #ff8c00;
+    }
+
+    .status-info {
+      color: #666;
+    }
+
+    .loading {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    .csv-info {
+      background: #e8f4ff;
+      border: 1px solid #b3d9ff;
+      border-radius: 4px;
+      padding: 8px 12px;
+      font-size: 11px;
+      color: #0066cc;
+      margin-bottom: 12px;
+    }
+
+    .csv-info.hidden {
+      display: none;
+    }
+
+    .help-text {
+      font-size: 10px;
+      color: #999;
+      margin-top: 6px;
+      line-height: 1.3;
+    }
+
+    /* Collapsible Section Styles */
+    .collapsible-section {
+      border: 1px solid #e1e5e9;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .collapsible-header {
+      width: 100%;
+      background: #f8f9fa;
+      border: none;
+      padding: 12px 16px;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      font-weight: 500;
+      color: #333;
+      transition: background-color 0.2s;
+    }
+
+    .collapsible-header:hover {
+      background: #e9ecef;
+    }
+
+    .collapsible-title {
+      flex: 1;
+    }
+
+    .collapsible-arrow {
+      font-size: 10px;
+      transition: transform 0.2s;
+      color: #666;
+    }
+
+    .collapsible-content {
+      padding: 16px;
+      background: white;
+      border-top: 1px solid #e1e5e9;
+      max-height: 1000px;
+      overflow: hidden;
+      transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+    }
+
+    .collapsible-content.collapsed {
+      max-height: 0;
+      padding: 0 16px;
+      border-top: none;
+    }
+
+    .collapsible-header.collapsed .collapsible-arrow {
+      transform: rotate(-90deg);
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <span class="header-icon">🔤</span>
+    <span class="header-title">Figma Localization Plugin</span>
+  </div>
+
+  <div class="section">
+    <div class="section-title">CSV Data Source</div>
+
+    <!-- Method 1: Google Sheets URL via Proxy -->
+    <div class="input-group">
+      <label class="input-label">Google Sheets URL (via proxy):</label>
+      <input
+        type="text"
+        id="sheetsUrl"
+        class="input-field"
+        placeholder="https://docs.google.com/spreadsheets/d/.../export?format=csv"
+      />
+      <div class="help-text">
+        🌐 Uses external proxy to bypass CORS restrictions
+      </div>
+    </div>
+
+    <button id="loadFromSheets" class="button button-primary">Load from Google Sheets</button>
+
+    <!-- Method 2: Direct CSV Input -->
+    <div class="collapsible-section" style="margin-top: 20px;">
+      <button class="collapsible-header" id="manualInputToggle">
+        <span class="collapsible-title">Manual CSV Input</span>
+        <span class="collapsible-arrow">▼</span>
+      </button>
+      <div class="collapsible-content" id="manualInputContent">
+        <div class="input-group">
+          <label class="input-label">Paste CSV data directly:</label>
+          <textarea
+            id="csvData"
+            class="input-field"
+            rows="6"
+            placeholder="key,EN,DE,ES,FR,IT&#10;title_main,Welcome to Our App,Willkommen in unserer App,Bienvenido a nuestra aplicación,Bienvenue dans notre application,Benvenuto nella nostra app&#10;button_save,Save,Speichern,Guardar,Enregistrer,Salva&#10;button_cancel,Cancel,Abbrechen,Cancelar,Annuler,Annulla"
+          ></textarea>
+          <div class="help-text">
+            📋 Manual method: Copy from Google Sheets and paste here
+          </div>
+        </div>
+
+        <div class="button-group">
+          <button id="loadDataDirect" class="button button-secondary">Load CSV Data</button>
+          <button id="loadExample" class="button button-secondary">Load Example</button>
+        </div>
+
+        <div id="csvInfo" class="csv-info hidden">
+          <div id="csvInfoContent"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Section Management</div>
+
+    <button id="generateAllLanguages" class="button button-primary" disabled>
+      Generate All Languages
+    </button>
+    <div class="help-text">
+      Select a master section first, then click to generate sections for all languages
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Localization</div>
+
+    <div class="button-group">
+      <button id="localizeSelected" class="button button-secondary" disabled>
+        Localize Selected
+      </button>
+      <button id="localizeAll" class="button button-secondary" disabled>
+        Localize All
+      </button>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">🪄 Autosize</div>
+
+    <div class="autosize-section">
+      <div class="toggle-container">
+        <div class="toggle-label">
+          <span class="toggle-icon">📏</span>
+          Auto-fit text to container
+        </div>
+        <div id="autosizeToggle" class="toggle">
+          <div class="toggle-slider"></div>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label class="input-label">Minimum font size (px)</label>
+        <input
+          type="number"
+          id="minFontSize"
+          class="number-input"
+          value="10"
+          min="6"
+          max="24"
+        />
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">📊 Status & Logs</div>
+
+    <div class="status-section">
+      <div id="statusContent" class="status-content status-info">
+Ready to load CSV data...
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let isLoading = false;
+    let autosizeEnabled = false;
+    let csvLoaded = false;
+
+    // Elements
+    const sheetsUrlInput = document.getElementById('sheetsUrl');
+    const csvDataInput = document.getElementById('csvData');
+    const loadFromSheetsBtn = document.getElementById('loadFromSheets');
+    const loadDataDirectBtn = document.getElementById('loadDataDirect');
+    const loadExampleBtn = document.getElementById('loadExample');
+    const generateAllLanguagesBtn = document.getElementById('generateAllLanguages');
+    const localizeSelectedBtn = document.getElementById('localizeSelected');
+    const localizeAllBtn = document.getElementById('localizeAll');
+    const autosizeToggle = document.getElementById('autosizeToggle');
+    const minFontSizeInput = document.getElementById('minFontSize');
+    const manualInputToggle = document.getElementById('manualInputToggle');
+    const manualInputContent = document.getElementById('manualInputContent');
+    const statusContent = document.getElementById('statusContent');
+    const csvInfo = document.getElementById('csvInfo');
+    const csvInfoContent = document.getElementById('csvInfoContent');
+
+    // Event listeners
+    loadFromSheetsBtn.addEventListener('click', loadFromGoogleSheets);
+    loadDataDirectBtn.addEventListener('click', loadCsvDataDirect);
+    loadExampleBtn.addEventListener('click', loadExampleData);
+    generateAllLanguagesBtn.addEventListener('click', generateAllLanguages);
+    localizeSelectedBtn.addEventListener('click', () => localize('selected'));
+    localizeAllBtn.addEventListener('click', () => localize('all'));
+    autosizeToggle.addEventListener('click', toggleAutosize);
+    manualInputToggle.addEventListener('click', toggleManualInput);
+
+    // Handle messages from plugin
+    window.onmessage = (event) => {
+      const message = event.data.pluginMessage;
+      handlePluginMessage(message);
+    };
+
+    // Handle messages from proxy iframe
+    window.addEventListener('message', function(event) {
+      console.log('UI received message:', event.data, 'from origin:', event.origin);
+
+      // Security check - only accept messages from our proxy domains
+      const allowedOrigins = [
+        'https://miart.github.io',
+        'https://cdn.jsdelivr.net',
+        'https://raw.githubusercontent.com'
+      ];
+
+      if (!allowedOrigins.some(origin => event.origin.startsWith(origin))) {
+        console.log('Message origin not allowed:', event.origin);
+        return;
+      }
+
+      if (event.data.type === 'csv-success') {
+        console.log('Processing CSV success message. Data length:', event.data.data.length);
+        // Process successful CSV data from proxy
+        isLoadingFromSheets = false;
+        popupFallbackUsed = false;
+        parent.postMessage({
+          pluginMessage: {
+            type: 'load-csv-direct',
+            csvContent: event.data.data
+          }
+        }, '*');
+        console.log('Sent CSV data to plugin main');
+      } else if (event.data.type === 'csv-error') {
+        console.log('Processing CSV error message:', event.data.error);
+        isLoadingFromSheets = false;
+        popupFallbackUsed = false;
+        updateStatus('error', `❌ ${event.data.error}`);
+      }
+    });
+
+    let isLoadingFromSheets = false;
+    let popupFallbackUsed = false;
+
+    function loadFromGoogleSheets() {
+      if (isLoadingFromSheets) {
+        console.log('Already loading from sheets, ignoring duplicate call');
+        return;
+      }
+
+      const url = sheetsUrlInput.value.trim();
+
+      if (!url) {
+        updateStatus('error', '❌ Please enter a Google Sheets URL');
+        return;
+      }
+
+      isLoadingFromSheets = true;
+      popupFallbackUsed = false;
+      updateStatus('info', '⏳ Opening proxy to load data...');
+
+      // Use the real proxy service
+      const proxyUrl = 'https://miart.github.io/figma-localization-proxy/proxy.html';
+
+      try {
+        const popup = window.open(
+          proxyUrl,
+          'csv-proxy',
+          'width=600,height=500,scrollbars=yes,resizable=yes,menubar=no,toolbar=no,location=no'
+        );
+
+        // Better popup detection
+        if (popup && !popup.closed) {
+          // Double check that popup actually opened
+          setTimeout(() => {
+            try {
+              if (popup.closed || popup.location.href === 'about:blank') {
+                // Popup was blocked or immediately closed
+                handlePopupBlocked();
+              } else {
+                // Popup seems to be working
+                setupPopupCommunication(popup, url);
+              }
+            } catch (e) {
+              // Cross-origin access denied - popup is likely working
+              setupPopupCommunication(popup, url);
+            }
+          }, 100);
+        } else {
+          // Popup definitely blocked
+          handlePopupBlocked();
+        }
+
+        function setupPopupCommunication(popup, url) {
+          updateStatus('info', '🌐 Proxy opened. Loading your data...');
+
+          // Send URL to proxy when it loads
+          const sendMessage = () => {
+            try {
+              console.log('Sending message to proxy:', { type: 'load-csv', url: url });
+              popup.postMessage({
+                type: 'load-csv',
+                url: url
+              }, 'https://miart.github.io');
+            } catch (e) {
+              console.log('Failed to send message to proxy:', e);
+            }
+          };
+
+          // Try sending message multiple times (proxy might still be loading)
+          setTimeout(sendMessage, 500);
+          setTimeout(sendMessage, 1000);
+          setTimeout(sendMessage, 2000);
+
+          // Check if popup was closed
+          const checkClosed = setInterval(() => {
+            if (popup.closed) {
+              clearInterval(checkClosed);
+              isLoadingFromSheets = false;
+              popupFallbackUsed = false;
+              updateStatus('info', '📋 Proxy closed. You can also paste CSV data manually below.');
+            }
+          }, 1000);
+        }
+
+        function handlePopupBlocked() {
+          if (popupFallbackUsed) {
+            console.log('Popup fallback already used, ignoring');
+            return;
+          }
+
+          popupFallbackUsed = true;
+          isLoadingFromSheets = false;
+          updateStatus('error', '❌ Popup blocked! Opening in new tab instead...');
+
+          // Fallback: open in new tab
+          setTimeout(() => {
+            window.open(proxyUrl + '?url=' + encodeURIComponent(url), '_blank');
+            updateStatus('info', '🔗 Opened proxy in new tab. Close it when data is loaded.');
+
+            // Start polling for localStorage data
+            startPollingForTabData();
+          }, 1000);
+        }
+
+        function startPollingForTabData() {
+          const pollInterval = setInterval(() => {
+            try {
+              const storedData = localStorage.getItem('figma-csv-data');
+              if (storedData) {
+                const message = JSON.parse(storedData);
+                console.log('Found CSV data in localStorage:', message);
+
+                // Clear the stored data
+                localStorage.removeItem('figma-csv-data');
+                clearInterval(pollInterval);
+
+                // Process the data
+                if (message.type === 'csv-success') {
+                  isLoadingFromSheets = false;
+                  popupFallbackUsed = false;
+                  parent.postMessage({
+                    pluginMessage: {
+                      type: 'load-csv-direct',
+                      csvContent: message.data
+                    }
+                  }, '*');
+                  updateStatus('success', '✅ CSV data loaded successfully from tab!');
+                }
+              }
+            } catch (e) {
+              console.log('Error polling localStorage:', e);
+            }
+          }, 1000);
+
+          // Stop polling after 60 seconds
+          setTimeout(() => {
+            clearInterval(pollInterval);
+          }, 60000);
+        }
+      } catch (error) {
+        isLoadingFromSheets = false;
+        updateStatus('error', `❌ Failed to open proxy: ${error.message}`);
+      }
+    }
+
+    function loadCsvDataDirect() {
+      const csvContent = csvDataInput.value.trim();
+
+      if (!csvContent) {
+        updateStatus('error', '❌ Please paste CSV data');
+        return;
+      }
+
+      updateStatus('info', '⏳ Processing CSV data...');
+
+      parent.postMessage({
+        pluginMessage: {
+          type: 'load-csv-direct',
+          csvContent: csvContent
+        }
+      }, '*');
+    }
+
+    function loadExampleData() {
+      const exampleData = `key,EN,DE,ES,FR,IT
+title_main,Welcome to Our App,Willkommen in unserer App,Bienvenido a nuestra aplicación,Bienvenue dans notre application,Benvenuto nella nostra app
+title_secondary,Get Started Today,Fangen Sie heute an,Comience hoy,Commencez aujourd'hui,Inizia oggi
+button_save,Save,Speichern,Guardar,Enregistrer,Salva
+button_cancel,Cancel,Abbrechen,Cancelar,Annuler,Annulla
+button_continue,Continue,Weiter,Continuar,Continuer,Continua
+button_back,Back,Zurück,Atrás,Retour,Indietro
+label_email,Email Address,E-Mail-Adresse,Dirección de correo electrónico,Adresse e-mail,Indirizzo email
+label_password,Password,Passwort,Contraseña,Mot de passe,Password
+message_welcome,Welcome back! We're glad to see you again.,Willkommen zurück! Wir freuen uns Sie wiederzusehen.,¡Bienvenido de vuelta! Nos alegra verte de nuevo.,Bon retour! Nous sommes heureux de vous revoir.,Bentornato! Siamo felici di rivederti.`;
+
+      csvDataInput.value = exampleData;
+      updateStatus('info', '📄 Example data loaded. Click "Load CSV Data" to use it.');
+    }
+
+    function generateAllLanguages() {
+      updateStatus('info', '⏳ Generating language sections...');
+
+      parent.postMessage({
+        pluginMessage: {
+          type: 'generate-all-languages'
+        }
+      }, '*');
+    }
+
+    function localize(mode) {
+      const options = {
+        autosizeEnabled: autosizeEnabled,
+        minFontSize: parseInt(minFontSizeInput.value) || 10
+      };
+
+      updateStatus('info', `⏳ Localizing ${mode === 'all' ? 'all sections' : 'selected sections'}...`);
+
+      parent.postMessage({
+        pluginMessage: {
+          type: mode === 'all' ? 'localize-all' : 'localize-selected',
+          options: options
+        }
+      }, '*');
+    }
+
+    function toggleAutosize() {
+      autosizeEnabled = !autosizeEnabled;
+      autosizeToggle.classList.toggle('active', autosizeEnabled);
+      updateStatus('info', `🪄 Autosize ${autosizeEnabled ? 'enabled' : 'disabled'}`);
+    }
+
+    function handlePluginMessage(message) {
+      switch (message.type) {
+        case 'loading':
+          setLoadingState(message.isLoading);
+          break;
+
+        case 'csv-loaded':
+          handleCsvLoaded(message);
+          break;
+
+        case 'localization-complete':
+          handleLocalizationComplete(message);
+          break;
+
+        case 'generation-complete':
+          handleGenerationComplete(message);
+          break;
+
+        case 'error':
+          updateStatus('error', `❌ ${message.message}`);
+          break;
+
+        default:
+          console.log('Unknown message:', message);
+      }
+    }
+
+    function handleCsvLoaded(message) {
+      if (message.success) {
+        csvLoaded = true;
+        updateButtons();
+
+        const languageList = message.languages.join(', ');
+        csvInfoContent.textContent = `✅ Loaded ${message.keyCount} keys for languages: ${languageList}`;
+        csvInfo.classList.remove('hidden');
+
+        updateStatus('success', `✅ CSV loaded successfully!\n${message.keyCount} translation keys found\nLanguages: ${languageList}`);
+      } else {
+        csvLoaded = false;
+        updateButtons();
+        csvInfo.classList.add('hidden');
+        updateStatus('error', `❌ Failed to load CSV:\n${message.error}`);
+      }
+    }
+
+    function handleLocalizationComplete(message) {
+      let statusText = `✅ ${message.message}\n\n`;
+
+      const languages = Object.keys(message.results);
+
+      if (languages.length === 0) {
+        statusText += 'ℹ️ No sections processed';
+      } else {
+        statusText += 'Results:\n';
+
+        for (const lang of languages) {
+          const result = message.results[lang];
+          statusText += `${lang}: ${result.localized} localized`;
+
+          if (result.autosized > 0) {
+            statusText += ` (${result.autosized} auto-fitted)`;
+          }
+
+          statusText += '\n';
+
+          if (result.warnings && result.warnings.length > 0) {
+            statusText += `⚠️ Warnings for ${lang}:\n`;
+            result.warnings.forEach(warning => {
+              statusText += `  • ${warning}\n`;
+            });
+          }
+        }
+      }
+
+      updateStatus('success', statusText.trim());
+    }
+
+    function handleGenerationComplete(message) {
+      if (message.success) {
+        updateStatus('success', `✅ ${message.message}\n\nGenerated sections: ${message.generatedLanguages.join(', ')}\nTotal sections created: ${message.sectionsCreated}`);
+      } else {
+        updateStatus('error', `❌ Failed to generate sections:\n${message.error}`);
+      }
+    }
+
+    function setLoadingState(loading) {
+      isLoading = loading;
+      document.body.classList.toggle('loading', loading);
+      updateButtons();
+    }
+
+    function updateButtons() {
+      loadDataDirectBtn.disabled = isLoading;
+      generateAllLanguagesBtn.disabled = isLoading || !csvLoaded;
+      localizeSelectedBtn.disabled = isLoading || !csvLoaded;
+      localizeAllBtn.disabled = isLoading || !csvLoaded;
+
+      loadDataDirectBtn.textContent = isLoading ? 'Loading...' : 'Load CSV Data';
+    }
+
+    function updateStatus(type, message) {
+      statusContent.className = `status-content status-${type}`;
+      statusContent.textContent = message;
+
+      // Auto-scroll to bottom
+      statusContent.scrollTop = statusContent.scrollHeight;
+    }
+
+    function toggleManualInput() {
+      const isCollapsed = manualInputContent.classList.contains('collapsed');
+
+      if (isCollapsed) {
+        // Expand
+        manualInputContent.classList.remove('collapsed');
+        manualInputToggle.classList.remove('collapsed');
+      } else {
+        // Collapse
+        manualInputContent.classList.add('collapsed');
+        manualInputToggle.classList.add('collapsed');
+      }
+    }
+
+    // Initialize UI
+    updateButtons();
+
+    // Set manual input section to collapsed by default
+    manualInputContent.classList.add('collapsed');
+    manualInputToggle.classList.add('collapsed');
+  </script>
+</body>
+</html>
