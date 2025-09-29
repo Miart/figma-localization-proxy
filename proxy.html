@@ -97,8 +97,9 @@
         const loadButton = document.getElementById('loadButton');
         const statusDiv = document.getElementById('status');
 
-        // Check if we're running inside Figma plugin iframe
+        // Check if we're running inside Figma plugin iframe or popup
         const isInFigma = window.parent !== window;
+        const isPopup = window.opener !== null;
 
         loadButton.addEventListener('click', loadCsvData);
 
@@ -154,11 +155,16 @@
                 console.log('CSV preview:', csvContent.substring(0, 200));
 
                 // Send data back to Figma plugin
+                const message = {
+                    type: 'csv-success',
+                    data: csvContent
+                };
+
                 if (isInFigma) {
-                    window.parent.postMessage({
-                        type: 'csv-success',
-                        data: csvContent
-                    }, '*');
+                    window.parent.postMessage(message, '*');
+                }
+                if (isPopup && window.opener) {
+                    window.opener.postMessage(message, '*');
                 }
 
                 showStatus(`✅ CSV loaded successfully! ${csvContent.length} characters`, 'success');
@@ -169,11 +175,16 @@
                 const errorMessage = `Failed to load CSV: ${error.message}`;
 
                 // Send error back to Figma plugin
+                const errorMsg = {
+                    type: 'csv-error',
+                    error: errorMessage
+                };
+
                 if (isInFigma) {
-                    window.parent.postMessage({
-                        type: 'csv-error',
-                        error: errorMessage
-                    }, '*');
+                    window.parent.postMessage(errorMsg, '*');
+                }
+                if (isPopup && window.opener) {
+                    window.opener.postMessage(errorMsg, '*');
                 }
 
                 showStatus(`❌ ${errorMessage}`, 'error');
