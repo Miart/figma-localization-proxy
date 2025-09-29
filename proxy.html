@@ -129,11 +129,11 @@
                     const text = await response.text();
                     console.log('CSV loaded successfully, length:', text.length);
 
-                    // Send data back to ui.html
+                    // Send data back to ui.html (use '*' for Figma plugin context)
                     event.source.postMessage({
                         type: 'sheetsData',
                         data: text
-                    }, event.origin);
+                    }, '*');
 
                     showStatus('✅ CSV loaded successfully!', 'success');
 
@@ -142,7 +142,7 @@
                     event.source.postMessage({
                         type: 'error',
                         error: err.message
-                    }, event.origin);
+                    }, '*');
 
                     showStatus(`❌ Failed to load CSV: ${err.message}`, 'error');
                 }
