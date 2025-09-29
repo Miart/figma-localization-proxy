@@ -448,6 +448,23 @@ Ready to load CSV data...
       handlePluginMessage(message);
     };
 
+    // Create hidden iframe for proxy
+    let proxyIframe = null;
+    let isLoadingFromSheets = false;
+
+    function createProxyIframe() {
+      if (proxyIframe) return proxyIframe;
+
+      const iframe = document.createElement('iframe');
+      iframe.src = 'https://miart.github.io/figma-localization-proxy/proxy.html';
+      iframe.style.display = 'none';
+      document.body.appendChild(iframe);
+
+      proxyIframe = iframe;
+      console.log('Proxy iframe created');
+      return iframe;
+    }
+
     // Handle messages from proxy iframe
     window.addEventListener('message', function(event) {
       console.log('UI received message:', event.data, 'from origin:', event.origin);
@@ -464,11 +481,10 @@ Ready to load CSV data...
         return;
       }
 
-      if (event.data.type === 'csv-success') {
+      if (event.data.type === 'sheetsData') {
         console.log('Processing CSV success message. Data length:', event.data.data.length);
         // Process successful CSV data from proxy
         isLoadingFromSheets = false;
-        popupFallbackUsed = false;
         parent.postMessage({
           pluginMessage: {
             type: 'load-csv-direct',
@@ -476,16 +492,13 @@ Ready to load CSV data...
           }
         }, '*');
         console.log('Sent CSV data to plugin main');
-      } else if (event.data.type === 'csv-error') {
+        updateStatus('success', '✅ Data received from proxy, processing...');
+      } else if (event.data.type === 'error') {
         console.log('Processing CSV error message:', event.data.error);
         isLoadingFromSheets = false;
-        popupFallbackUsed = false;
         updateStatus('error', `❌ ${event.data.error}`);
       }
     });
-
-    let isLoadingFromSheets = false;
-    let popupFallbackUsed = false;
 
     function loadFromGoogleSheets() {
       if (isLoadingFromSheets) {
@@ -501,107 +514,38 @@ Ready to load CSV data...
       }
 
       isLoadingFromSheets = true;
-      popupFallbackUsed = false;
-      updateStatus('info', '⏳ Opening proxy to load data...');
+      updateStatus('info', '⏳ Loading data through proxy...');
 
-      // Use the real proxy service
-      const proxyUrl = 'https://miart.github.io/figma-localization-proxy/proxy.html';
+      // Create iframe if it doesn't exist
+      const iframe = createProxyIframe();
 
-      try {
-        const popup = window.open(
-          proxyUrl,
-          'csv-proxy',
-          'width=600,height=500,scrollbars=yes,resizable=yes,menubar=no,toolbar=no,location=no'
-        );
-
-        // Better popup detection
-        if (popup && !popup.closed) {
-          // Double check that popup actually opened
-          setTimeout(() => {
-            try {
-              if (popup.closed || popup.location.href === 'about:blank') {
-                // Popup was blocked or immediately closed
-                handlePopupBlocked();
-              } else {
-                // Popup seems to be working
-                setupPopupCommunication(popup, url);
-              }
-            } catch (e) {
-              // Cross-origin access denied - popup is likely working
-              setupPopupCommunication(popup, url);
-            }
-          }, 100);
-        } else {
-          // Popup definitely blocked
-          handlePopupBlocked();
-        }
-
-        function setupPopupCommunication(popup, url) {
-          updateStatus('info', '🌐 Proxy opened. Loading your data...');
-
-          // Send URL to proxy when it loads
-          const sendMessage = () => {
-            try {
-              console.log('Sending message to proxy:', { type: 'load-csv', url: url });
-              popup.postMessage({
-                type: 'load-csv',
-                url: url
-              }, 'https://miart.github.io');
-            } catch (e) {
-              console.log('Failed to send message to proxy:', e);
-            }
-          };
-
-          // Try sending message multiple times (proxy might still be loading)
-          setTimeout(sendMessage, 500);
-          setTimeout(sendMessage, 1000);
-          setTimeout(sendMessage, 2000);
-
-          // Check if popup was closed
-          const checkClosed = setInterval(() => {
-            if (popup.closed) {
-              clearInterval(checkClosed);
-              isLoadingFromSheets = false;
-              popupFallbackUsed = false;
-              updateStatus('info', '📋 Proxy closed. You can also paste CSV data manually below.');
-            }
-          }, 1000);
-        }
-
-        function handlePopupBlocked() {
-          if (popupFallbackUsed) {
-            console.log('Popup fallback already used, ignoring');
-            return;
-          }
-
-          popupFallbackUsed = true;
+      // Wait for iframe to load, then send message
+      const sendMessage = () => {
+        try {
+          console.log('Sending message to proxy iframe:', { action: 'fetchSheets', url: url });
+          iframe.contentWindow.postMessage({
+            action: 'fetchSheets',
+            url: url
+          }, '*');
+        } catch (e) {
+          console.error('Failed to send message to proxy:', e);
           isLoadingFromSheets = false;
-          updateStatus('error', '❌ Popup blocked! Opening in new tab instead...');
-
-          // Fallback: open in new tab
-          setTimeout(() => {
-            window.open(proxyUrl + '?url=' + encodeURIComponent(url), '_blank');
-            updateStatus('info', '🔗 Opened proxy in new tab. Close it when data is loaded.');
-
-            // Start polling for localStorage data
-            startPollingForTabData();
-          }, 1000);
+          updateStatus('error', `❌ Failed to communicate with proxy: ${e.message}`);
         }
+      };
 
-        function startPollingForTabData() {
-          // Since localStorage is not available in Figma plugins,
-          // show instructions to user for manual copy-paste
-          updateStatus('info', '📋 In the opened tab: when CSV loads successfully, copy the loaded data and paste it in the Manual CSV Input section below.');
+      // Try sending message multiple times (iframe might still be loading)
+      setTimeout(sendMessage, 500);
+      setTimeout(sendMessage, 1000);
+      setTimeout(sendMessage, 1500);
 
-          // Auto-expand the manual input section for convenience
-          if (manualInputContent.classList.contains('collapsed')) {
-            toggleManualInput();
-          }
+      // Timeout after 10 seconds
+      setTimeout(() => {
+        if (isLoadingFromSheets) {
+          isLoadingFromSheets = false;
+          updateStatus('error', '❌ Loading timeout. Please check the URL and try again.');
         }
-      } catch (error) {
-        isLoadingFromSheets = false;
-        updateStatus('error', `❌ Failed to open proxy: ${error.message}`);
-      }
+      }, 10000);
     }
 
     function loadCsvDataDirect() {

@@ -107,13 +107,47 @@
 
         // Handle URL from parent (Figma plugin)
         let csvLoadStarted = false;
-        window.addEventListener('message', function(event) {
+        window.addEventListener('message', async function(event) {
             console.log('Proxy received message:', event.data, 'from origin:', event.origin);
-            if (event.data && event.data.type === 'load-csv' && event.data.url && !csvLoadStarted) {
-                console.log('Loading CSV with URL:', event.data.url);
+
+            const { action, url } = event.data;
+
+            if (action === 'fetchSheets' && url && !csvLoadStarted) {
+                console.log('Loading CSV with URL:', url);
                 csvLoadStarted = true;
-                csvUrlInput.value = event.data.url;
-                loadCsvData();
+                csvUrlInput.value = url;
+
+                // Fetch CSV data
+                try {
+                    showStatus('Loading CSV data...', 'info');
+                    const response = await fetch(url);
+
+                    if (!response.ok) {
+                        throw new Error(response.statusText);
+                    }
+
+                    const text = await response.text();
+                    console.log('CSV loaded successfully, length:', text.length);
+
+                    // Send data back to ui.html
+                    event.source.postMessage({
+                        type: 'sheetsData',
+                        data: text
+                    }, event.origin);
+
+                    showStatus('✅ CSV loaded successfully!', 'success');
+
+                } catch (err) {
+                    console.error('Failed to load CSV:', err);
+                    event.source.postMessage({
+                        type: 'error',
+                        error: err.message
+                    }, event.origin);
+
+                    showStatus(`❌ Failed to load CSV: ${err.message}`, 'error');
+                }
+
+                csvLoadStarted = false;
             } else if (csvLoadStarted) {
                 console.log('CSV load already started, ignoring duplicate message');
             }

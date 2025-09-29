@@ -1,0 +1,22 @@
+{
+  "name": "Figma Localization Plugin",
+  "id": "123456789012345678",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "ui.html",
+  "editorType": [
+    "figma"
+  ],
+  "networkAccess": {
+    "allowedDomains": [
+      "https://miart.github.io",
+      "https://cdn.jsdelivr.net",
+      "https://raw.githubusercontent.com"
+    ],
+    "devAllowedDomains": [
+      "https://miart.github.io",
+      "https://cdn.jsdelivr.net",
+      "https://raw.githubusercontent.com"
+    ]
+  }
+}
