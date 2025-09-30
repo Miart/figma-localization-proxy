@@ -444,7 +444,14 @@ Ready to load CSV data...
 
     // Handle messages from plugin
     window.onmessage = (event) => {
-      const message = event.data.pluginMessage;
+      // Allow messages from Figma itself
+      if (event.origin === 'https://www.figma.com' && event.data.pluginMessage) {
+        handlePluginMessage(event.data.pluginMessage);
+        return;
+      }
+
+      // Fallback for other message formats
+      const message = event.data.pluginMessage || event.data;
       handlePluginMessage(message);
     };
 
@@ -468,6 +475,12 @@ Ready to load CSV data...
     // Handle messages from proxy iframe
     window.addEventListener('message', function(event) {
       console.log('UI received message:', event.data, 'from origin:', event.origin);
+
+      // Allow messages from Figma
+      if (event.origin === 'https://www.figma.com') {
+        console.log('Message from Figma, handled by window.onmessage');
+        return;
+      }
 
       // Security check - only accept messages from our proxy domains
       const allowedOrigins = [

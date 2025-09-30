@@ -704,32 +704,42 @@ async function autoFitTextToContainer(textNode, options) {
   }
 
   try {
-    const parent = textNode.parent;
-    if (!parent || !('width' in parent) || !('height' in parent)) {
-      return { applied: false, error: "No fixed container found" };
-    }
+    // Get the original fixed size of the text node
+    const originalWidth = textNode.width;
+    const originalHeight = textNode.height;
 
+    // Check if text node has fixed size
     if (textNode.textAutoResize !== "NONE") {
-      textNode.textAutoResize = "NONE";
+      console.log(`Text "${textNode.name}" has auto-resize enabled, cannot apply autosize`);
+      return { applied: false, error: "Text has auto-resize enabled" };
     }
 
     const originalFontSize = typeof textNode.fontSize === 'number' ? textNode.fontSize : 16;
     const originalLineHeight = textNode.lineHeight;
     const originalLetterSpacing = textNode.letterSpacing;
 
-    const maxWidth = parent.width;
-    const maxHeight = parent.height;
+    const maxWidth = originalWidth;
+    const maxHeight = originalHeight;
 
     let currentFontSize = originalFontSize;
     const stepSize = 0.5;
-    const maxIterations = 50;
+    const maxIterations = 100;
 
     await figma.loadFontAsync(textNode.fontName);
 
+    console.log(`Autosize for "${textNode.name}": maxW=${maxWidth}, maxH=${maxHeight}, currentW=${textNode.width}, currentH=${textNode.height}, fontSize=${originalFontSize}`);
+
+    // Check if text already fits
+    if (textNode.width <= maxWidth && textNode.height <= maxHeight) {
+      console.log(`Text "${textNode.name}" already fits, no resize needed`);
+      return { applied: false };
+    }
+
     for (let i = 0; i < maxIterations; i++) {
       if (textNode.width <= maxWidth && textNode.height <= maxHeight) {
+        console.log(`Text "${textNode.name}" fitted after ${i} iterations. Final size: ${currentFontSize}px`);
         return {
-          applied: i > 0,
+          applied: true,
           originalFontSize,
           newFontSize: currentFontSize
         };
@@ -738,6 +748,7 @@ async function autoFitTextToContainer(textNode, options) {
       currentFontSize -= stepSize;
 
       if (currentFontSize < options.minFontSize) {
+        console.log(`Text "${textNode.name}" cannot fit with minFontSize ${options.minFontSize}px`);
         figma.notify(`⚠ Text "${textNode.name}" cannot fit container with minimum font size ${options.minFontSize}px`);
         return {
           applied: false,
